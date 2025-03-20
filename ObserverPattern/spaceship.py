@@ -19,6 +19,8 @@ class Spaceship(DeliveryObserver):
         self.current_location = "Library Hub Alpha"
         self.current_missions = []
         self.mission_history = []
+        self.received_alerts = []  # Stocker les alertes reçues
+
 
     def assign_pilot(self, pilot: 'Pilot') -> None:
         """Assign a pilot to the spaceship with bidirectional relationship
@@ -45,6 +47,9 @@ class Spaceship(DeliveryObserver):
         Args:
             book_info: Information about books that need delivery
         """
+        # Ajouter l'alerte à la liste des alertes reçues
+        self.received_alerts.append(book_info)
+
         if self.can_fulfill_mission(book_info):
             if self.pilot:
                 self.pilot.receive_mission_alert(book_info)
@@ -156,3 +161,34 @@ class Spaceship(DeliveryObserver):
             self.fuel_level -= fuel_used
             return f"The spaceship {self.name} has traveled! Remaining fuel: {self.fuel_level} units."
         return "Insufficient fuel for travel!"
+
+    def has_received_alert(self, book_info):
+        """Vérifie si ce vaisseau a reçu une alerte spécifique
+
+        Args:
+            book_info: L'information sur le livre à vérifier
+
+        Returns:
+            bool: True si l'alerte a été reçue, False sinon
+        """
+        for alert in self.received_alerts:
+            # Comparaison basée sur le titre pour simplifier
+            if alert.title == book_info.title:
+                return True
+
+        return False
+
+    def add_active_mission(self, book_info):
+        """Ajoute une mission active pour ce vaisseau"""
+        if book_info not in self.current_missions:
+            self.current_missions.append(book_info)
+
+
+    def has_active_mission(self, book_info):
+        """Vérifie si ce vaisseau a une mission active spécifique"""
+        return book_info in self.current_missions
+
+
+    def is_available(self):
+        """Vérifie si ce vaisseau est disponible pour de nouvelles missions"""
+        return len(self.current_missions) < self.capacity / 10  # Par exemple, chaque mission occupe 10% de capacité

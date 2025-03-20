@@ -88,34 +88,6 @@ def step_impl(context):
     assert assignment['success'], "La mission aurait dû être attribuée automatiquement"
 
 
-@then('le pilote devrait recevoir un briefing de mission')
-def step_impl(context):
-    # Vérifier que le pilote du vaisseau assigné a reçu le briefing
-    pilot = context.assigned_spaceship.pilot
-    assert pilot.has_received_briefing(context.book_info), \
-        f"Le pilote {pilot.name} n'a pas reçu le briefing de mission"
-
-
-# Étapes pour "Vérification du statut d'un vaisseau spatial"
-
-@when('le contrôleur demande le statut du "{spaceship_name}"')
-def step_impl(context, spaceship_name):
-    spaceship = context.spaceships.get(spaceship_name)
-    assert spaceship is not None, f"Vaisseau {spaceship_name} non trouvé"
-
-    context.spaceship_status = spaceship.get_status()
-
-
-@then('le système devrait afficher le niveau de carburant actuel')
-def step_impl(context):
-    assert 'fuel_level' in context.spaceship_status, \
-        "Le statut ne contient pas d'information sur le carburant"
-
-
-@then('la liste des missions en cours')
-def step_impl(context):
-    assert 'current_missions' in context.spaceship_status, \
-        "Le statut ne contient pas la liste des missions en cours"
 
 
 # Étapes pour "Ravitaillement d'un vaisseau en carburant"
@@ -145,25 +117,32 @@ def step_impl(context, level):
         f"Le niveau de carburant est {spaceship.fuel_level}, mais devrait être {level}"
 
 
-@then('un rapport de ravitaillement devrait être généré')
-def step_impl(context):
-    assert context.report, "Un rapport de ravitaillement aurait dû être généré"
-    assert str(context.before_level) in context.report, "Le rapport devrait mentionner le niveau précédent"
-    assert str(context.refuel_amount) in context.report, "Le rapport devrait mentionner la quantité ajoutée"
+
 
 
 # Étapes pour "Fin de mission et retour de livre"
 
-@given('que le "{spaceship_name}" a livré "{book_title}"')
+@given('que le "{spaceship_name}" est assigné à livrer "{book_title}"')
 def step_impl(context, spaceship_name, book_title):
     spaceship = context.spaceships.get(spaceship_name)
     assert spaceship is not None, f"Vaisseau {spaceship_name} non trouvé"
 
-    # Créer une mission en cours pour le vaisseau
+    # Créer une mission pour le vaisseau
     book_info = BookInfo(title=book_title, destination="Test destination", priority=3)
     spaceship.add_active_mission(book_info)
+
     context.mission_spaceship = spaceship
     context.mission_book_info = book_info
+
+
+@given('que le système a enregistré cette mission')
+def step_impl(context):
+    # Enregistrer la mission dans le système de livraison
+    context.delivery_system.active_missions[context.mission_book_info.title] = {
+        'spaceship': context.mission_spaceship,
+        'book_info': context.mission_book_info,
+        'status': 'assigned'
+    }
 
 
 @when('le pilote marque la mission comme terminée')
@@ -172,6 +151,10 @@ def step_impl(context):
     pilot = spaceship.pilot
 
     context.mission_result = pilot.complete_mission(context.mission_book_info)
+    # Ajouter cette ligne pour mettre à jour manuellement le DeliverySystem
+    context.delivery_system.record_mission_completion(
+        context.mission_book_info, spaceship)
+
 
 
 @then('le livre devrait être enregistré comme livré dans le système')

@@ -24,8 +24,12 @@ class LibraryMonitor:
         for observer in self._observers:
             observer.update(book_info)
 
-    def check_for_new_books(self) -> None:
-        """Check if new books have been added to the library"""
+    def check_for_new_books(self) -> bool:
+        """Check if new books have been added to the library
+
+        Returns:
+            bool: True if new books were detected, False otherwise
+        """
         current_count = self._bibliotheque.nombre_de_livres
         if current_count > self._last_book_count:
             # In a real implementation, we would get details about the new books
@@ -38,3 +42,6 @@ class LibraryMonitor:
             )
             self.notify_observers(book_info)
             self._last_book_count = current_count
+            return True  # La méthode retourne maintenant True quand des livres sont détectés
+
+        return False  # Et False quand aucun livre n'est détecté
