@@ -1,10 +1,7 @@
-import datetime
-
-
+# bibliotheque/livre.py
 class Livre:
     """
     Classe représentant un livre dans une bibliothèque.
-    Cette classe est développée selon l'approche Outside-In (BDD).
     """
 
     def __init__(self, titre, isbn):
@@ -64,6 +61,7 @@ class Livre:
 
         self._statut = "Emprunté"
         self._emprunteur = membre
+        import datetime
         self._date_retour = datetime.date.today() + datetime.timedelta(days=21)
         return True
 
