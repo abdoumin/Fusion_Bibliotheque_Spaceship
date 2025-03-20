@@ -1,0 +1,5 @@
+# Modules Python nécessaires pour le projet Pilot & Spaceship
+pytest==7.2.0         # Pour l'exécution des tests unitaires
+unittest              # Intégré à Python mais mentionné pour clarté
+typing-extensions==4.4.0  # Pour les annotations avancées et éviter les erreurs de dépendance circulaire
+Behave
